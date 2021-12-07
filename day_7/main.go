@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -34,16 +35,9 @@ func sum(in []int) int {
 	return sum
 }
 
-func abs(val int) int {
-	if val < 0 {
-		return -val
-	}
-	return val
-}
-
 func abs_arr(in *[]int) {
 	for i := range *in {
-		(*in)[i] = abs((*in)[i])
+		(*in)[i] = int(math.Abs(float64((*in)[i])))
 	}
 }
 
