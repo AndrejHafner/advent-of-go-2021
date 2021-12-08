@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func read_input(filename string) []int {
@@ -24,6 +25,13 @@ func read_input(filename string) []int {
 	}
 
 	return lanternfish
+}
+
+func elapsed(what string) func() {
+	start := time.Now()
+	return func() {
+		fmt.Printf("%s took %v\n", what, time.Since(start))
+	}
 }
 
 func simulate_day(day_fish_map *[9]int) {
@@ -67,6 +75,7 @@ func part_2(lanternfish []int) int {
 }
 
 func main() {
+	defer elapsed("main")()
 	input := read_input("input.txt")
 	solution_1 := part_1(input)
 	solution_2 := part_2(input)
