@@ -40,24 +40,6 @@ func get_start_vert(vertices []*Vertex) *Vertex {
 	return nil
 }
 
-type Stack struct {
-	s []*Vertex
-}
-
-func (stack *Stack) Push(vert *Vertex) {
-	(*stack).s = append((*stack).s, vert)
-}
-
-func (stack *Stack) Pop() *Vertex {
-	item := (*stack).s[len((*stack).s)-1]
-	(*stack).s = (*stack).s[:len((*stack).s)-1]
-	return item
-}
-
-func (stack *Stack) Size() int {
-	return len((*stack).s)
-}
-
 func read_input(filename string) []*Vertex {
 	bs, err := ioutil.ReadFile(filename)
 	if err != nil {
