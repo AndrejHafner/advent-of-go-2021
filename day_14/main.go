@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"strings"
 )
 
@@ -29,56 +30,151 @@ func read_input(filename string) (string, map[string]string) {
 	return template, insertion_map
 }
 
-func pair_insertion(template *[]string, insertion_map map[string]string) {
-	var new_template []string
-
-	new_template = append(new_template, (*template)[0])
-
-	for i := 0; i < len(*template)-1; i++ {
-		pair := (*template)[i] + (*template)[i+1]
-		insert_value, contains := insertion_map[pair]
-
-		if contains {
-			new_template = append(new_template, insert_value)
+func arr_contains(arr []string, el string) bool {
+	for _, e := range arr {
+		if e == el {
+			return true
 		}
-		new_template = append(new_template, (*template)[i+1])
 	}
-
-	*template = new_template
+	return false
 }
 
-func get_max_min_element(template_arr *[]string) (int, int) {
+func get_max_min_element(pair_map *map[string]int, template string) (int, int) {
 	counter := map[string]int{}
 
-	for _, el := range *template_arr {
-		_, contains := counter[el]
-		if !contains {
-			counter[el] = 1
-		} else {
-			counter[el]++
+	template_split := strings.Split(template, "")
+
+	first_el := template_split[0]
+	last_el := template_split[len(template_split)-1]
+
+	for pair, count := range *pair_map {
+		for _, el := range strings.Split(pair, "") {
+			_, contains := counter[el]
+			if !contains {
+				counter[el] = count
+			} else {
+				counter[el] += count
+			}
+		}
+
+	}
+
+	max := math.MinInt64
+	max_key := ""
+	min := math.MaxInt64
+	min_key := ""
+
+	for key, value := range counter {
+		if value > max {
+			max = value
+			max_key = key
+		}
+		if value < min {
+			min = value
+			min_key = key
 		}
 	}
 
-	return 0, 0
+	if arr_contains(strings.Split(max_key, ""), first_el) || arr_contains(strings.Split(max_key, ""), last_el) {
+		max = (max)/2 - 1
+	} else {
+		max = max / 2
+	}
+
+	if arr_contains(strings.Split(min_key, ""), first_el) || arr_contains(strings.Split(min_key, ""), last_el) {
+		min = (min)/2 - 1
+	} else {
+		min = min / 2
+	}
+
+	return max, min
+}
+
+func create_pair_map(template string) map[string]int {
+	template_arr := strings.Split(template, "")
+	pair_map := map[string]int{}
+	for i := 0; i < len(template_arr)-1; i++ {
+		pair := template_arr[i] + template_arr[i+1]
+		_, contains := pair_map[pair]
+		if contains {
+			pair_map[pair]++
+		} else {
+			pair_map[pair] = 1
+		}
+	}
+
+	return pair_map
+}
+
+func pair_insertion(pair_map *map[string]int, insertion_map map[string]string) {
+	new_pair_map := map[string]int{}
+
+	for k, v := range *pair_map {
+		new_pair_map[k] = v
+	}
+
+	for pair, count := range *pair_map {
+		insert_val, contains := insertion_map[pair]
+		if !contains {
+			continue
+		}
+
+		pair_split := strings.Split(pair, "")
+		new_pair_1 := pair_split[0] + insert_val
+		new_pair_2 := insert_val + pair_split[1]
+
+		_, contains_p_1 := new_pair_map[new_pair_1]
+		if !contains_p_1 {
+			new_pair_map[new_pair_1] = count
+		} else {
+			new_pair_map[new_pair_1] += count
+		}
+
+		_, contains_p_2 := new_pair_map[new_pair_2]
+		if !contains_p_2 {
+			new_pair_map[new_pair_2] = count
+		} else {
+			new_pair_map[new_pair_2] += count
+
+		}
+
+		new_pair_map[pair] -= count
+
+	}
+
+	for key, value := range new_pair_map {
+		if value == 0 {
+			delete(new_pair_map, key)
+		}
+	}
+
+	*pair_map = new_pair_map
 }
 
 func part_1(template string, insertion_map map[string]string) int {
-
-	template_arr := strings.Split(template, "")
-	n_steps := 40
+	pair_map := create_pair_map(template)
+	n_steps := 10
 
 	for step := 0; step < n_steps; step++ {
-		fmt.Println(step)
-		pair_insertion(&template_arr, insertion_map)
+		pair_insertion(&pair_map, insertion_map)
 	}
 
-	max, min := get_max_min_element(&template_arr)
+	max, min := get_max_min_element(&pair_map, template)
 
 	return max - min
 }
 
 func part_2(template string, insertion_map map[string]string) int {
-	return 0
+	pair_map := create_pair_map(template)
+	n_steps := 40
+
+	for step := 0; step < n_steps; step++ {
+		pair_insertion(&pair_map, insertion_map)
+	}
+
+	max, min := get_max_min_element(&pair_map, template)
+
+	return max - min
 }
 
 func main() {
